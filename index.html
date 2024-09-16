@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+        />
+        <title>Labyrinth-Spiel</title>
+        <style>
+            body {
+                display: flex; /* Flexbox-Layout für die Anordnung von Canvas und Text nebeneinander */
+                background-image: url(assets/background_log.jpeg);
+                align-items: flex-start; /* Elemente oben ausrichten */
+                cursor: url("cheese_point.png"), auto;
+            }
+
+            canvas {
+                border: 5px solid rgba(79, 34, 21, 255);
+            }
+
+            .sidebar {
+                margin-left: 20px; /* Abstand zwischen Canvas und den Texten */
+                font-size: 50px;
+                font-weight: bold;
+            }
+
+            p {
+                margin: 10px 0; /* Abstand zwischen den Texten */
+                cursor: url("cheese_point_2.png"), auto;
+                font-family: "Roboto", sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="gameCanvas"></canvas>
+        <div class="sidebar">
+            <u>
+                <strong>
+                    <h style="font-family: Roboto, sans-serif"
+                        >Die Maus muss Raus!!!</h
+                    >
+                </strong>
+            </u>
+            <p id="Level1">Level 1</p>
+            <p id="Level2">Level 2</p>
+            <p id="Clear">Aufräumen</p>
+            <!-- Neuer Text für Aufräumen -->
+        </div>
+        <script type="module" src="./main.js"></script>
+    </body>
+</html>
