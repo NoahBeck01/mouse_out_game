@@ -1,4 +1,4 @@
-import { Level1coords, Level2coords } from "./Levelcoords";
+import { Level1coords, Level2coords } from "./Levelcoords.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
