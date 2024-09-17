@@ -3,7 +3,7 @@ import {
     Level2coords,
     Level3coords,
     Level4coords,
-} from "./Levelcoords";
+} from "./Levelcoords.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
