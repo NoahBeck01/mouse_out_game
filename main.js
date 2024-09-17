@@ -1,22 +1,39 @@
-import { Level1coords, Level2coords } from "./Levelcoords.js";
+import {
+    Level1coords,
+    Level2coords,
+    Level3coords,
+    Level4coords,
+} from "./Levelcoords";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 var img = document.getElementById("maus");
+
 document.getElementById("Level1").onclick = function () {
-    pressLevel1();
+    LevelPress("level1");
 };
 
 document.getElementById("Level2").onclick = function () {
-    pressLevel2();
+    LevelPress("level2");
+};
+
+document.getElementById("Level3").onclick = function () {
+    LevelPress("level3");
+};
+
+document.getElementById("Level4").onclick = function () {
+    LevelPress("level4");
 };
 
 document.getElementById("Clear").onclick = function () {
     NO_ENTRY_ZONES = [];
+    firework_enable = false;
 };
 
+let firework_enable = false;
+
 // Größe des Canvas
-const CANVAS_WIDTH = 1000;
+const CANVAS_WIDTH = 1400;
 const CANVAS_HEIGHT = 1000;
 
 // Größe jedes Feldes
@@ -33,7 +50,8 @@ let image_path_chesse = "assets/chesse.png";
 
 let NO_ENTRY_ZONES = [];
 
-const GoalCoords = 9;
+const GoalCoordsX = 13;
+const GoalCoordsY = 9;
 
 // Bild direkt laden
 const mausImage = new Image();
@@ -64,8 +82,8 @@ function drawGoalImage() {
 
     ctx.drawImage(
         chesseImage, // Verwende das geladene Bild
-        GoalCoords * FIELD_SIZE,
-        GoalCoords * FIELD_SIZE,
+        GoalCoordsX * FIELD_SIZE,
+        GoalCoordsY * FIELD_SIZE,
         scaledWidth,
         scaledHeight
     );
@@ -98,13 +116,14 @@ function drawWall() {
     });
 }
 
-function pressLevel1() {
-    NO_ENTRY_ZONES = Level1coords;
+function LevelPress(level) {
+    if (level == "level1") NO_ENTRY_ZONES = Level1coords;
+    if(level == "level2") NO_ENTRY_ZONES = Level2coords;
+    if(level == "level3") NO_ENTRY_ZONES = Level3coords;
+    if(level == "level4") NO_ENTRY_ZONES = Level4coords
 }
 
-function pressLevel2() {
-    NO_ENTRY_ZONES = Level2coords;
-}
+
 
 // Funktion zur Handhabung der Pfeiltasten
 function handleKeyPress(event) {
@@ -157,10 +176,12 @@ canvas.addEventListener("mousedown", function (e) {
 });
 
 function checkifGoal() {
-    if (playerX === GoalCoords && playerY === GoalCoords) {
+    if (playerX === GoalCoordsX && playerY === GoalCoordsY) {
         console.log("GOAL");
         playerX = StartCoords;
         playerY = StartCoords;
+
+        firework_enable = true;
     }
 }
 
@@ -206,6 +227,7 @@ function gameLoop() {
     drawPlayerImage();
     drawWall();
     checkifGoal();
+    if (firework_enable) animate_firework();
     requestAnimationFrame(gameLoop);
 }
 
@@ -217,3 +239,97 @@ canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 drawGrid();
 gameLoop();
+
+class Firework {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height;
+        this.sx = Math.random() * 3 - 1.5;
+        this.sy = Math.random() * -3 - 3;
+        this.size = Math.random() * 2 + 1;
+        const colorVal = Math.round(0xffffff * Math.random());
+        [this.r, this.g, this.b] = [
+            colorVal >> 16,
+            (colorVal >> 8) & 255,
+            colorVal & 255,
+        ];
+        this.shouldExplode = false;
+    }
+    update() {
+        this.shouldExplode =
+            this.sy >= -2 ||
+            this.y <= 100 ||
+            this.x <= 0 ||
+            this.x >= canvas.width;
+        this.sy += 0.01;
+        [this.x, this.y] = [this.x + this.sx, this.y + this.sy];
+    }
+    draw() {
+        ctx.fillStyle = `rgb(${this.r},${this.g},${this.b})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+class Particle {
+    constructor(x, y, r, g, b) {
+        [this.x, this.y, this.sx, this.sy, this.r, this.g, this.b] = [
+            x,
+            y,
+            Math.random() * 3 - 1.5,
+            Math.random() * 3 - 1.5,
+            r,
+            g,
+            b,
+        ];
+        this.size = Math.random() * 2 + 1;
+        this.life = 100;
+    }
+    update() {
+        [this.x, this.y, this.life] = [
+            this.x + this.sx,
+            this.y + this.sy,
+            this.life - 1,
+        ];
+    }
+    draw() {
+        ctx.fillStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${
+            this.life / 100
+        })`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+const fireworks = [new Firework()];
+const particles = [];
+
+function animate_firework() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    Math.random() < 0.25 && fireworks.push(new Firework()); //Controlling the number of fireworks
+    fireworks.forEach((firework, i) => {
+        firework.update();
+        firework.draw();
+        if (firework.shouldExplode) {
+            for (let j = 0; j < 50; j++)
+                particles.push(
+                    new Particle(
+                        firework.x,
+                        firework.y,
+                        firework.r,
+                        firework.g,
+                        firework.b
+                    )
+                );
+            fireworks.splice(i, 1);
+        }
+    });
+    particles.forEach((particle, i) => {
+        particle.update();
+        particle.draw();
+        if (particle.life <= 0) particles.splice(i, 1);
+    });
+}
